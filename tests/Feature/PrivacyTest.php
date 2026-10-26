@@ -25,6 +25,18 @@ class PrivacyTest extends TestCase
         $this->get('/privacy')->assertSee('30 hari')->assertSee('Google Forms');
     }
 
+    public function test_support_contact_falls_back_when_hosting_config_is_empty(): void
+    {
+        foreach ([null, ''] as $value) {
+            config(['examroom.support_email' => $value]);
+            foreach (['/privacy', '/delete-account', '/support'] as $path) {
+                $this->get($path)->assertOk()->assertSee('mailto:support@examroom.smkn4tpi.sch.id', false);
+            }
+            $mail = (new ConfirmAccountDeletion('https://example.test/confirm'))->toMail(new \stdClass);
+            $this->assertStringContainsString('support@examroom.smkn4tpi.sch.id', implode(' ', $mail->outroLines));
+        }
+    }
+
     public function test_request_validates_email_hides_account_existence_and_does_not_delete(): void
     {
         Notification::fake();

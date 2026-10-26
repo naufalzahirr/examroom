@@ -14,7 +14,7 @@
     @if ($page === 'privacy')
         <span class="badge">PRIVASI ANDA</span><h1>Kebijakan Privasi ExamRoom</h1>
         <p>Terakhir diperbarui: 26 Oktober 2026. Berlaku untuk aplikasi Android ExamRoom (<code>id.examroom.app</code>) dan web pada domain examroom.smkn4tpi.sch.id.</p>
-        <section><h2>Pengelola dan kontak</h2><p>ExamRoom menyediakan browser ujian dan ruang guru untuk membuat serta memantau sesi Google Forms. Pengelola layanan ExamRoom dapat dihubungi melalui <a href="mailto:{{ config('examroom.support_email') }}">{{ config('examroom.support_email') }}</a>. Kebijakan ini menjelaskan pemrosesan oleh layanan ExamRoom; sekolah dan pembuat formulir bertanggung jawab atas kegiatan ujian serta formulir yang mereka kelola.</p></section>
+        <section><h2>Pengelola dan kontak</h2><p>ExamRoom menyediakan browser ujian dan ruang guru untuk membuat serta memantau sesi Google Forms. Pengelola layanan ExamRoom dapat dihubungi melalui <a href="mailto:{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}">{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}</a>. Kebijakan ini menjelaskan pemrosesan oleh layanan ExamRoom; sekolah dan pembuat formulir bertanggung jawab atas kegiatan ujian serta formulir yang mereka kelola.</p></section>
         <section><h2>Data yang kami proses</h2><ul>
             <li><strong>Akun guru:</strong> nama, alamat email, nama sekolah, identitas akun, pengaturan keamanan, kata sandi dan PIN pengawas. Kata sandi serta PIN disimpan sebagai hash. Login Google memproses ID akun Google, nama dan email untuk autentikasi.</li>
             <li><strong>Sesi ujian:</strong> judul, tautan Google Forms, kode, durasi, waktu berlaku, nama guru/sekolah dan kebijakan penguncian.</li>
@@ -27,7 +27,7 @@
         <section><h2>Berapa lama data disimpan</h2><p>Data peserta dijadwalkan dibersihkan setelah {{ config('examroom.participant_retention_days') }} hari tanpa pembaruan, melalui pembersihan harian server. Akun guru dan data sesi tetap disimpan untuk menjalankan layanan sampai akun dihapus. Masa berlaku kode ujian tidak otomatis menghapus data sesi.</p><p>Penghapusan akun menghapus profil, sesi dan peserta terkait dari database aktif serta mencabut token akses. Catatan operasional, email yang sudah dikirim dan salinan cadangan infrastruktur tidak termasuk penghapusan langsung database aktif. Untuk status retensi atau penghapusan salinan tersebut, hubungi dukungan. Data pada layanan Google mengikuti kebijakan serta pengaturan layanan dan pemilik formulir.</p></section>
         <section><h2>Permintaan penghapusan dan pertanyaan privasi</h2><p>Guru dapat <a href="{{ route('account-deletion') }}">meminta hapus akun dan data terkait</a> tanpa login. Kami mengirim tautan verifikasi ke email akun; penghapusan dijalankan setelah Anda mengonfirmasi. Peserta tanpa akun dapat meminta penghapusan data melalui email dukungan dengan menyebutkan guru/sekolah, sesi, nama dan nomor peserta yang relevan. Kami dapat meminta informasi minimum untuk memverifikasi permintaan; jangan mengirim sandi, PIN atau jawaban ujian.</p></section>
         <section><h2>Pengguna usia sekolah</h2><p>Layanan digunakan dalam kegiatan pendidikan dengan arahan guru/sekolah. Guru perlu memberikan informasi tentang data dan formulir yang digunakan serta memastikan pemberitahuan dan persetujuan yang diperlukan sesuai usia peserta. Orang tua atau wali dapat menghubungi dukungan untuk pertanyaan atau permintaan terkait data anak.</p></section>
-        <section><h2>Perubahan kebijakan</h2><p>Perubahan kebijakan akan ditampilkan pada halaman ini dengan tanggal pembaruan. Pertanyaan mengenai kebijakan atau pemrosesan data dapat dikirim ke <a href="mailto:{{ config('examroom.support_email') }}">{{ config('examroom.support_email') }}</a>.</p></section>
+        <section><h2>Perubahan kebijakan</h2><p>Perubahan kebijakan akan ditampilkan pada halaman ini dengan tanggal pembaruan. Pertanyaan mengenai kebijakan atau pemrosesan data dapat dikirim ke <a href="mailto:{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}">{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}</a>.</p></section>
     @elseif ($page === 'deletion')
         <span class="badge">KONTROL DATA</span><h1>Hapus akun dan data ExamRoom</h1>
         @if (session('deleted'))<div class="card success" role="status"><h2>Akun telah dihapus</h2><p>Profil guru, sesi ujian, peserta terkait dan token akses di database aktif ExamRoom telah dihapus. Anda dapat menutup halaman ini.</p></div>@endif
@@ -40,7 +40,7 @@
             <label for="email">Email akun guru</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" value="{{ old('email') }}" required>
             <button class="action" type="submit">Kirim tautan konfirmasi</button>
         </form>
-        <section><h2>Peserta tanpa akun atau kehilangan akses email?</h2><p>Kirim permintaan ke <a href="mailto:{{ config('examroom.support_email') }}?subject=Permintaan%20penghapusan%20data%20ExamRoom">{{ config('examroom.support_email') }}</a>. Sebutkan data yang ingin dihapus dan informasi sesi/guru terkait. Kami akan memverifikasi kepemilikan sebelum menindaklanjuti. Jangan mengirim kata sandi atau PIN pengawas.</p></section>
+        <section><h2>Peserta tanpa akun atau kehilangan akses email?</h2><p>Kirim permintaan ke <a href="mailto:{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}?subject=Permintaan%20penghapusan%20data%20ExamRoom">{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}</a>. Sebutkan data yang ingin dihapus dan informasi sesi/guru terkait. Kami akan memverifikasi kepemilikan sebelum menindaklanjuti. Jangan mengirim kata sandi atau PIN pengawas.</p></section>
     @elseif ($page === 'confirm-deletion')
         <span class="badge">KONFIRMASI TERAKHIR</span><h1>Hapus akun ExamRoom secara permanen?</h1>
         <p>Akun guru yang menerima tautan ini, seluruh sesi ujian dan data peserta terkait akan dihapus dari database aktif. Token akses akan dicabut. Ujian yang masih berjalan tidak dapat dilanjutkan melalui sesi tersebut.</p>
@@ -52,12 +52,12 @@
         </form><a class="link" href="/teacher">Batal, kembali ke Teacher Room</a>
     @else
         <span class="badge">KAMI SIAP MEMBANTU</span><h1>Bantuan ExamRoom</h1>
-        <p>Hubungi <a href="mailto:{{ config('examroom.support_email') }}">{{ config('examroom.support_email') }}</a> untuk bantuan akun, privasi dan kendala aplikasi.</p>
+        <p>Hubungi <a href="mailto:{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}">{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}</a> untuk bantuan akun, privasi dan kendala aplikasi.</p>
         <section class="card"><h2>Kendala saat ujian</h2><p>Hubungi guru atau pengawas terlebih dahulu untuk kode kedaluwarsa, PIN keluar, sesi dijeda dan konfigurasi perangkat. ExamRoom tidak menyediakan PIN darurat yang ditanam dalam aplikasi.</p></section>
         <section class="card"><h2>Laporkan masalah</h2><p>Sertakan versi aplikasi, model perangkat, versi Android, waktu kejadian dan pesan kesalahan. Gunakan data contoh; jangan mengirim kata sandi, PIN, token, jawaban ujian atau data pribadi peserta lain.</p></section>
         <section class="card"><h2>Privasi dan penghapusan</h2><p>Baca <a href="{{ route('privacy') }}">kebijakan privasi</a> atau <a href="{{ route('account-deletion') }}">mulai permintaan hapus akun/data</a>. Peserta tanpa akun dan orang tua/wali juga dapat menghubungi email dukungan.</p></section>
     @endif
     </main>
-    <footer class="legal-footer">ExamRoom · <a href="mailto:{{ config('examroom.support_email') }}">{{ config('examroom.support_email') }}</a></footer>
+    <footer class="legal-footer">ExamRoom · <a href="mailto:{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}">{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}</a></footer>
 </div>
 </body></html>

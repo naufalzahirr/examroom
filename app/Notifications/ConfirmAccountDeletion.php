@@ -24,6 +24,6 @@ class ConfirmAccountDeletion extends Notification
             ->action('Tinjau dan konfirmasi penghapusan', $this->url)
             ->line('Tautan berlaku selama 1 jam. Membuka tautan saja tidak menghapus akun; Anda harus mengonfirmasi pada halaman berikutnya.')
             ->line('Jawaban di Google Forms tidak dihapus oleh ExamRoom. Hubungi pemilik formulir untuk pengelolaan data tersebut.')
-            ->line('Jika Anda tidak meminta penghapusan, abaikan email ini. Untuk bantuan, hubungi '.config('examroom.support_email').'.');
+            ->line('Jika Anda tidak meminta penghapusan, abaikan email ini. Untuk bantuan, hubungi '.(config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id').'.');
     }
 }

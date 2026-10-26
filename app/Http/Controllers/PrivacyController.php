@@ -24,7 +24,7 @@ class PrivacyController extends Controller
             }
         }
 
-        return back()->with('status', 'Jika email tersebut terdaftar, kami akan mengirim tautan konfirmasi yang berlaku selama 1 jam. Belum ada data yang dihapus. Jika email tidak diterima, hubungi '.config('examroom.support_email').'.');
+        return back()->with('status', 'Jika email tersebut terdaftar, kami akan mengirim tautan konfirmasi yang berlaku selama 1 jam. Belum ada data yang dihapus. Jika email tidak diterima, hubungi '.(config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id').'.');
     }
 
     public function confirmDeletion(Request $request, string $user)
