@@ -20,3 +20,7 @@ php artisan test
 ```
 
 Lihat `docs/EXAMROOM-SETUP.md`, `docs/EXAMROOM-SECURITY.md`, dan `docs/EXAMROOM-VERIFICATION.md`. Hosting produksi memerlukan HTTPS, APP_DEBUG=false, cache persisten bersama, database produksi dan cron scheduler. Belum dideploy.
+
+## Privasi dan penghapusan akun
+
+Halaman `/privacy`, `/delete-account` dan `/support` tersedia pada source. Permintaan hapus akun diverifikasi melalui email dan memerlukan konfirmasi akhir. [Konfigurasi, deployment dan pengujian](docs/EXAMROOM-WEB-PRIVACY.md). SMTP produksi harus aktif; URL belum dianggap tayang sebelum deployment diperiksa.
