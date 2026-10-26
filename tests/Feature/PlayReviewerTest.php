@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\PlayReviewerSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -14,8 +15,7 @@ class PlayReviewerTest extends TestCase
 
     private function provision(): void
     {
-        config(['examroom.provision_reviewer' => true]);
-        (require database_path('migrations/2026_10_26_000001_provision_play_reviewer.php'))->up();
+        $this->seed(PlayReviewerSeeder::class);
     }
 
     public function test_provisions_a_normal_teacher_and_a_long_lived_pinning_demo_without_participants(): void
@@ -83,9 +83,8 @@ class PlayReviewerTest extends TestCase
         $this->assertDatabaseHas('exam_sessions', ['id' => $exam['id'], 'user_id' => $other->id]);
     }
 
-    public function test_provisioning_can_be_disabled_and_rollback_keeps_accounts(): void
+    public function test_migration_does_not_create_accounts_and_rollback_keeps_seeded_accounts(): void
     {
-        config(['examroom.provision_reviewer' => false]);
         $migration = require database_path('migrations/2026_10_26_000001_provision_play_reviewer.php');
         $migration->up();
         $this->assertDatabaseCount('users', 0);
