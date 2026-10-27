@@ -16,8 +16,11 @@ class ExamController extends Controller
     {
         $q = ExamSession::where('user_id', $r->user()->id);
         $page = (clone $q)->withCount('participants')->latest()->paginate(50);
+        $activity = Participant::whereIn('exam_session_id', (clone $q)->select('id'))
+            ->whereNotNull('last_seen_at')->latest('last_seen_at')->limit(3)->get()
+            ->map(fn (Participant $p) => ['name' => $p->full_name, 'status' => $p->status, 'at' => $p->last_seen_at]);
 
-        return ['sessions' => $page->items(), 'page' => $page->currentPage(), 'last_page' => $page->lastPage(), 'summary' => ['sessions' => (clone $q)->count(), 'active' => (clone $q)->where('active', true)->where('expires_at', '>', now())->count(), 'participants' => Participant::whereIn('exam_session_id', (clone $q)->select('id'))->count()]];
+        return ['recent_activity' => $activity, 'sessions' => $page->items(), 'page' => $page->currentPage(), 'last_page' => $page->lastPage(), 'summary' => ['sessions' => (clone $q)->count(), 'active' => (clone $q)->where('active', true)->where('expires_at', '>', now())->count(), 'participants' => Participant::whereIn('exam_session_id', (clone $q)->select('id'))->count(), 'attention' => Participant::whereIn('exam_session_id', (clone $q)->select('id'))->whereIn('status', ['checking', 'paused'])->count()]];
     }
 
     private function owned(Request $r, string $id): ExamSession
@@ -30,7 +33,7 @@ class ExamController extends Controller
         $s = $this->owned($r, $id);
         $page = $s->participants()->latest()->paginate(100);
 
-        return ['session' => $s, 'participants' => $page->items(), 'participants_total' => $page->total(), 'page' => $page->currentPage(), 'last_page' => $page->lastPage()];
+        return ['action_codes' => $s->teacherCodes(), 'session' => $s, 'participants' => $page->items(), 'participants_total' => $page->total(), 'page' => $page->currentPage(), 'last_page' => $page->lastPage(), 'summary' => ['in_session' => $s->participants()->where('status', 'in_session')->count(), 'attention' => $s->participants()->whereIn('status', ['checking', 'paused'])->count(), 'exited' => $s->participants()->where('status', 'exited')->count()]];
     }
 
     public function deactivate(Request $r, string $id)
@@ -44,23 +47,40 @@ class ExamController extends Controller
     public function create(Request $r)
     {
         $u = $r->user();
-        abort_unless($u->school_name && $u->supervisor_pin_hash, 422, 'Lengkapi profil dan PIN pengawas terlebih dahulu.');
-        $v = $r->validate(['title' => 'required|string|max:100', 'url' => 'required|url:https|max:2048', 'duration_minutes' => 'required|integer|min:1|max:480', 'valid_hours' => 'required|integer|min:1|max:168', 'require_managed_lock' => 'required|boolean']);
+        abort_unless($u->school_name, 422, 'Lengkapi profil sekolah terlebih dahulu.');
+        $v = $r->validate(['title' => 'required|string|max:100', 'url' => 'required|url:https|max:2048', 'duration_minutes' => 'required|integer|min:1|max:480', 'valid_hours' => 'required|integer|min:1|max:168']);
         $url = parse_url($v['url']);
         $host = strtolower($url['host'] ?? '');
         abort_if(isset($url['user']) || isset($url['pass']) || (isset($url['port']) && $url['port'] !== 443), 422, 'URL ujian tidak didukung.');
         // Public launch supports Google Forms only; expand with tested provider policies.
         abort_unless($host === 'forms.gle' || ($host === 'docs.google.com' && str_starts_with($url['path'] ?? '', '/forms/')), 422, 'Gunakan URL Google Forms (docs.google.com/forms atau forms.gle).');
+        $code = $this->newEntryCode();
+        unset($v['valid_hours']);
+        $s = ExamSession::create([...$v, 'user_id' => $u->id, 'code' => $code, 'platform' => 'Google Forms', 'school_name' => $u->school_name, 'teacher_name' => $u->name, 'expires_at' => now()->addHours($r->integer('valid_hours'))]);
+
+        return response()->json(['session' => $s->refresh(), 'action_codes' => $s->teacherCodes()], 201);
+    }
+
+    private function newEntryCode(?string $previous = null): string
+    {
         do {
             $code = '';
             for ($i = 0; $i < 6; $i++) {
                 $code .= 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[random_int(0, 31)];
             }
-        } while (ExamSession::where('code', $code)->exists());
-        unset($v['valid_hours']);
-        $s = ExamSession::create([...$v, 'user_id' => $u->id, 'code' => $code, 'platform' => 'Google Forms', 'school_name' => $u->school_name, 'teacher_name' => $u->name, 'supervisor_pin_hash' => $u->supervisor_pin_hash, 'expires_at' => now()->addHours($r->integer('valid_hours'))]);
+        } while ($code === $previous || ExamSession::where('code', $code)->exists());
+        return $code;
+    }
 
-        return response()->json(['session' => $s], 201);
+    public function reactivate(Request $r, string $id)
+    {
+        $v = $r->validate(['valid_hours' => 'required|integer|min:1|max:168']);
+        return DB::transaction(function () use ($r, $id, $v) {
+            $s = ExamSession::where('user_id', $r->user()->id)->lockForUpdate()->findOrFail($id);
+            abort_if($s->active && $s->expires_at->isFuture(), 409, 'Ujian masih aktif. Kode tidak diubah.');
+            $s->update(['code' => $this->newEntryCode($s->code), 'active' => true, 'expires_at' => now()->addHours($v['valid_hours']), 'require_managed_lock' => false]);
+            return ['session' => $s->refresh(), 'action_codes' => $s->teacherCodes()];
+        });
     }
 
     private function resolveCode(Request $r, string $code, bool $lock = false): ExamSession
@@ -122,9 +142,9 @@ class ExamController extends Controller
             $s = $p->examSession;
             if ($v['status'] === 'in_session') {
                 $s->assertAvailable();
-                abort_if($p->status === 'paused' && (! $p->resume_authorized_until || $p->resume_authorized_until->isPast()), 403, 'PIN pengawas diperlukan untuk melanjutkan sesi.');
-                abort_unless(in_array($v['lock_mode'] ?? '', $s->require_managed_lock ? ['managed'] : ['managed', 'pinned']), 422, 'Mode penguncian yang diwajibkan belum aktif.');
-                abort_if($p->started_at && $p->started_at->addMinutes($s->duration_minutes)->isPast(), 409, 'Waktu ujian habis. Minta pengawas mengakhiri sesi.');
+                abort_if($p->status === 'paused' && (! $p->resume_authorized_until || $p->resume_authorized_until->isPast()), 403, 'Kode lanjut ujian diperlukan untuk melanjutkan sesi.');
+                abort_unless(in_array($v['lock_mode'] ?? '', ['managed', 'pinned']), 422, 'Mode penguncian yang diwajibkan belum aktif.');
+                abort_if($p->started_at && $p->started_at->copy()->addMinutes($s->duration_minutes)->lessThanOrEqualTo(now()), 409, 'Waktu ujian habis. Minta pengawas mengakhiri sesi.');
             }
             $p->fill([...$v, 'last_seen_at' => now()]);
             $p->resume_authorized_until = null;
@@ -133,19 +153,32 @@ class ExamController extends Controller
             }
             $p->save();
 
-            return ['participant' => $p];
+            return ['participant' => $p, 'timing' => $this->timing($p)];
         });
+    }
+
+    private function timing(Participant $p): array
+    {
+        $now = now();
+        $deadline = ($p->started_at?->copy() ?? $now->copy())->addMinutes($p->examSession->duration_minutes);
+
+        return [
+            'server_now_ms' => $now->getTimestampMs(),
+            'deadline_at_ms' => $deadline->getTimestampMs(),
+            'remaining_ms' => max(0, $deadline->getTimestampMs() - $now->getTimestampMs()),
+        ];
     }
 
     public function authorize(Request $r)
     {
         $v = $r->validate(['pin' => 'required|digits:6', 'action' => 'required|in:exit,resume']);
         $p = $this->participant($r);
-        $key = 'pin:'.$p->exam_session_id;
-        abort_if(RateLimiter::tooManyAttempts($key, 5), 429, 'Terlalu banyak percobaan PIN. Tunggu 60 detik.');
-        if (! Hash::check($v['pin'], $p->examSession->supervisor_pin_hash)) {
+        $key = 'pin:'.$p->exam_session_id.':'.$v['action'];
+        abort_if(RateLimiter::tooManyAttempts($key, 5), 429, 'Terlalu banyak percobaan kode. Tunggu 60 detik.');
+        $hash = $v['action'] === 'exit' ? $p->examSession->exit_code_hash : $p->examSession->resume_code_hash;
+        if (! $hash || ! Hash::check($v['pin'], $hash)) {
             RateLimiter::hit($key, 60);
-            throw ValidationException::withMessages(['pin' => 'PIN pengawas salah.']);
+            throw ValidationException::withMessages(['pin' => $v['action'] === 'exit' ? 'Kode keluar ujian salah.' : 'Kode lanjut ujian salah.']);
         }
         RateLimiter::clear($key);
 
@@ -154,13 +187,12 @@ class ExamController extends Controller
             if ($v['action'] === 'exit') {
                 $p->update(['status' => 'exited', 'ended_at' => $p->ended_at ?? now(), 'last_seen_at' => now()]);
             } else {
-                abort_if($p->ended_at, 409, 'Sesi telah diakhiri.');
                 $p->examSession->assertAvailable();
-                abort_if($p->started_at && $p->started_at->addMinutes($p->examSession->duration_minutes)->isPast(), 409, 'Waktu ujian habis.');
-                $p->update(['resume_authorized_until' => now()->addMinute()]);
+                abort_if($p->started_at && $p->started_at->copy()->addMinutes($p->examSession->duration_minutes)->lessThanOrEqualTo(now()), 409, 'Waktu ujian habis.');
+                $p->update(['status' => 'paused', 'ended_at' => null, 'resume_authorized_until' => now()->addMinute(), 'last_seen_at' => now()]);
             }
 
-            return ['authorized' => true, 'participant' => $p];
+            return ['authorized' => true, 'participant' => $p, 'timing' => $this->timing($p)];
         });
     }
 }

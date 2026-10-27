@@ -108,12 +108,8 @@ return ['message' => 'Kata sandi berhasil diganti. Silakan masuk.'];
 
     public function security(Request $r)
     {
-        $v = $r->validate(['pin' => 'nullable|digits:6', 'require_managed_lock' => 'required|boolean']);
-        if (isset($v['pin'])) {
-            $r->user()->supervisor_pin_hash = Hash::make($v['pin']);
-        } $r->user()->require_managed_lock = $v['require_managed_lock'];
-        $r->user()->save();
-
+        // Kept as an authenticated compatibility endpoint for older installed clients.
+        $r->user()->update(['require_managed_lock' => false]);
         return ['user' => $r->user()];
     }
 }

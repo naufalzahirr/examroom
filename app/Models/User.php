@@ -34,6 +34,13 @@ class User extends Authenticatable
         'remember_token', 'supervisor_pin_hash', 'google_sub',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (User $user): void {
+            $user->require_managed_lock = false;
+        });
+    }
+
     /**
      * Get the attributes that should be cast.
      *

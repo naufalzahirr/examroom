@@ -30,7 +30,7 @@ class PlayReviewerSeeder extends Seeder
                 'updated_at' => $now,
             ]);
 
-            DB::table('exam_sessions')->insert([
+            \App\Models\ExamSession::create([
                 'id' => '310772c8-7ab4-4e78-a1e5-4c529695bc54',
                 'user_id' => $teacher,
                 'code' => 'L9WTL5',

@@ -19,8 +19,12 @@ Panel web menggunakan Blade/CSS/JavaScript lokal tanpa build npm. Bearer token w
 php artisan test
 ```
 
-Lihat `docs/EXAMROOM-SETUP.md`, `docs/EXAMROOM-SECURITY.md`, dan `docs/EXAMROOM-VERIFICATION.md`. Hosting produksi memerlukan HTTPS, APP_DEBUG=false, cache persisten bersama, database produksi dan cron scheduler. Belum dideploy.
+Lihat `docs/EXAMROOM-SETUP.md`, `docs/EXAMROOM-SECURITY.md`, dan `docs/EXAMROOM-VERIFICATION.md`. Hosting produksi memerlukan HTTPS, APP_DEBUG=false, cache persisten bersama, database produksi dan cron scheduler. Petunjuk penerapan versi 3.1.0 ada di `docs/EXAMROOM-DEPLOY-3.1.0.md`.
 
 ## Privasi dan penghapusan akun
 
 Halaman `/privacy`, `/delete-account` dan `/support` tersedia pada source. Permintaan hapus akun diverifikasi melalui email dan memerlukan konfirmasi akhir. [Konfigurasi, deployment dan pengujian](docs/EXAMROOM-WEB-PRIVACY.md). SMTP produksi harus aktif; URL belum dianggap tayang sebelum deployment diperiksa.
+
+## Akses ujian 3.1.0
+
+Kode keluar dan kode lanjut dibuat otomatis dan berbeda untuk setiap ujian, dapat dilihat guru pemilik pada detail ujian. Tidak perlu mengatur PIN profil atau wajib perangkat terkelola. Ujian kedaluwarsa/nonaktif dapat diaktifkan ulang dengan kode masuk baru, mempertahankan data peserta dan waktu mulai. Jalankan migrasi saat memperbarui hosting.
