@@ -5,8 +5,8 @@ Versi ini memperbarui UI Teacher Room, aktivasi ulang ujian dengan kode masuk ba
 Pada folder aplikasi Laravel hosting (folder berisi artisan):
 
 ```sh
-git pull --ff-only origin main
 php artisan down --retry=60
+git pull --ff-only origin main
 php artisan migrate --force
 php artisan optimize:clear
 php artisan config:cache
