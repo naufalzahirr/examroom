@@ -4,7 +4,7 @@
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="robots" content="{{ $page === 'confirm-deletion' ? 'noindex, nofollow' : 'index, follow' }}">
     <title>{{ ['privacy' => 'Kebijakan Privasi', 'deletion' => 'Hapus Akun dan Data', 'support' => 'Bantuan', 'confirm-deletion' => 'Konfirmasi Hapus Akun'][$page] }} — ExamRoom</title>
-    <link rel="icon" href="/assets/mark.png"><link rel="stylesheet" href="/assets/vendor/sneat/core.css?v=3.0.0"><link rel="stylesheet" href="/assets/examroom.css?v=20261028-sneat-1">
+    <link rel="icon" href="/assets/mark.png"><link rel="stylesheet" href="/assets/vendor/sneat/core.css?v=3.0.0"><link rel="stylesheet" href="/assets/examroom.css?v=20261028-figma-reset-2">
 </head>
 <body>
 <div class="legal-shell">
@@ -53,13 +53,13 @@
         </form><a class="link" href="/teacher">Batal, kembali ke Teacher Room</a>
     @else
         <div class="legal-page-heading"><h1>Bantuan ExamRoom</h1><p>Panduan untuk guru, peserta, dan pengawas.</p></div>
-        <section class="card"><h2>Untuk guru</h2><p>Masuk ke Teacher Room, lengkapi profil dan keamanan, lalu buat kode menggunakan tautan Google Forms.</p></section>
+        <section class="card"><h2>Untuk guru</h2><p>Masuk ke Teacher Room, lengkapi profil sekolah, lalu buat kode menggunakan tautan Google Forms.</p></section>
         <section class="card"><h2>Untuk siswa</h2><p>Gunakan aplikasi Android ExamRoom. Masukkan kode, konfirmasikan identitas ujian, dan ikuti persiapan perangkat.</p></section>
-        <section class="card"><h2>Kendala saat ujian</h2><p>Hubungi pengawas. Gunakan kode lanjut ujian untuk memulihkan sesi yang dijeda; kode keluar ujian dipakai untuk mengakhiri sesi. Kedua kode berbeda dan diberikan pengawas.</p><details class="legal-details"><summary>Panduan kendala perangkat dan sesi</summary><p>Hubungi guru atau pengawas terlebih dahulu untuk kode kedaluwarsa, kode keluar, sesi dijeda dan konfigurasi perangkat. ExamRoom tidak menyediakan kode darurat yang ditanam dalam aplikasi.</p></details></section>
+        <section class="card"><h2>Kendala saat ujian</h2><p>Hubungi pengawas. Gunakan kode lanjut ujian untuk memulihkan sesi yang dijeda; kode keluar ujian dipakai untuk mengakhiri sesi. Kedua kode berbeda dan diberikan pengawas. Guru dapat mereset kode masuk, keluar, atau lanjut secara terpisah dari detail ujian, termasuk sebelum kedaluwarsa. Kode lama langsung tidak berlaku; waktu ujian dan masa berlaku tetap.</p><details class="legal-details"><summary>Panduan kendala perangkat dan sesi</summary><p>Hubungi guru atau pengawas terlebih dahulu untuk kode kedaluwarsa, kode keluar, sesi dijeda dan konfigurasi perangkat. ExamRoom tidak menyediakan kode darurat yang ditanam dalam aplikasi.</p></details></section>
         <section class="card"><h2>Hubungi dukungan</h2><p><a href="mailto:{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}">{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}</a> · Jangan mengirim kata sandi, PIN, token atau jawaban ujian.</p><details class="legal-details"><summary>Laporkan masalah</summary><p>Sertakan versi aplikasi, model perangkat, versi Android, waktu kejadian dan pesan kesalahan. Gunakan data contoh; jangan mengirim kata sandi, PIN, token, jawaban ujian atau data pribadi peserta lain.</p></details><details class="legal-details"><summary>Privasi dan penghapusan</summary><p>Baca <a href="{{ route('privacy') }}">kebijakan privasi</a> atau <a href="{{ route('account-deletion') }}">mulai permintaan hapus akun/data</a>. Peserta tanpa akun dan orang tua/wali juga dapat menghubungi email dukungan.</p></details></section>
     @endif
     </main>
     <footer class="legal-footer">ExamRoom · <a href="mailto:{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}">{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}</a></footer>
 </div>
-<script src="/assets/examroom-public.js?v=20261028-sneat-1" defer></script>
+<script src="/assets/examroom-public.js?v=20261028-figma-reset-2" defer></script>
 </body></html>

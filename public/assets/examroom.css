@@ -451,3 +451,22 @@ dialog .actions{justify-content:flex-end;margin-top:20px}
 @media(min-width:801px) and (max-width:1000px){.split{grid-template-columns:1fr}
 .split>.desktop-only,.split>.stack.desktop-only{display:none!important}
 }
+
+/* Current Figma: native fields and public brand retain their full bounds. */
+.public-brand{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.public-brand>a{display:block;width:150px;height:88px;flex:none}
+.public-brand img{display:block}
+.public-brand p{margin:0;line-height:17.6px}
+.search-field input,.session-filters select,.participant-table .form-select{border:1px solid #d9dee3;border-radius:6px;color:var(--ink)}
+.search-field input{background-color:#fff}
+.search-field input::placeholder{color:#8592a3;opacity:1}
+.form-control:not(:placeholder-shown){color:var(--ink)}
+.exam-action-codes .reset-code{margin-top:8px}
+.session-code-actions{margin-top:16px}
+.generated-actions{flex-wrap:wrap}
+@media(max-width:800px){
+ .participant-table td:last-child .action{font-size:12px;min-width:34px;white-space:nowrap}
+ .mobile-session .badge{gap:4px}
+ .session-code-actions .action{flex:1;white-space:nowrap;padding-inline:10px;font-size:12px}
+ .public-brand{margin-bottom:24px}
+}

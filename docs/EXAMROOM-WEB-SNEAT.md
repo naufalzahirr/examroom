@@ -30,3 +30,14 @@ This replaces the previous Figma V6 web layout with the official Sneat Free Boot
 ## Hosting
 
 Pull `main`, then run `php artisan optimize:clear`. Include the new `public/assets/vendor/sneat` directory when deploying. This UI update adds no database migrations or package-install steps. If the earlier 3.1.0 release has not been deployed, follow its existing deployment guide for the prior migration. Hosting deployment remains manual.
+
+
+## Pembaruan Figma dan reset kode — 28 Oktober 2026
+
+Header publik mengikuti susunan logo dan caption Figma terbaru. Pencarian, dropdown, dan tombol detail peserta pada layar HP memakai batas dan ukuran yang konsisten dengan desain.
+
+Guru dapat mereset kode masuk, keluar aplikasi, atau lanjut ujian secara terpisah melalui detail ujian, termasuk saat masih aktif. Menu tindakan daftar ujian dan halaman kode baru juga menyediakan reset kode masuk. Konfirmasi menyebutkan bahwa kode lama langsung tidak berlaku. Reset tidak memperpanjang masa berlaku, mengaktifkan ujian, mengubah peserta, atau mengulang waktu ujian. Aktivasi ulang ujian kedaluwarsa tetap memakai alur tersendiri.
+
+API pemilik: `POST /api/exams/{id}/reset-code`, JSON `kind: entry|exit|resume`. Respons berisi `session` dan `action_codes`, hanya untuk pemilik. Kode pengawas tetap terenkripsi dan diverifikasi menggunakan hash. Pengecekan kode pengawas dan rotasi memakai kunci baris sesi; peserta yang bergabung juga memeriksa ulang kode masuk setelah memperoleh kunci.
+
+Validasi: 46 pengujian backend / 429 assertions; 62 pemeriksaan tampilan pada 320–1600 px; alur reset ketiga kode dan pembatalan dialog pada desktop/390/320 px, tanpa galat JavaScript. Tidak membutuhkan migrasi baru. Setelah pull, jalankan `php artisan optimize:clear` agar route dan view terbaru dipakai.

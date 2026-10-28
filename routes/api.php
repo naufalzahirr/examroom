@@ -22,6 +22,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::post('/exams', [E::class, 'create']);
     Route::get('/exams/{id}', [E::class, 'show']);
     Route::post('/exams/{id}/deactivate', [E::class, 'deactivate']);
+    Route::post('/exams/{id}/reset-code', [E::class, 'resetCode']);
     Route::post('/exams/{id}/reactivate', [E::class, 'reactivate']);
 });
 Route::middleware('throttle:exam-codes')->group(function () {

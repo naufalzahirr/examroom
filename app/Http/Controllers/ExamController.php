@@ -83,6 +83,25 @@ class ExamController extends Controller
         });
     }
 
+    public function resetCode(Request $r, string $id)
+    {
+        $v = $r->validate(['kind' => 'required|in:entry,exit,resume']);
+
+        return DB::transaction(function () use ($r, $id, $v) {
+            $s = ExamSession::where('user_id', $r->user()->id)->lockForUpdate()->findOrFail($id);
+            if ($v['kind'] === 'entry') {
+                $s->update(['code' => $this->newEntryCode($s->code)]);
+            } else {
+                do {
+                    $code = (string) random_int(100000, 999999);
+                } while (in_array($code, [$s->exit_code, $s->resume_code], true));
+                $s->update([$v['kind'].'_code' => $code, $v['kind'].'_code_hash' => Hash::make($code)]);
+            }
+
+            return ['session' => $s->refresh(), 'action_codes' => $s->teacherCodes()];
+        });
+    }
+
     private function resolveCode(Request $r, string $code, bool $lock = false): ExamSession
     {
         $key = 'invalid-code:'.$r->ip();
@@ -116,6 +135,7 @@ class ExamController extends Controller
 
         return DB::transaction(function () use ($v, $resolved) {
             $s = ExamSession::whereKey($resolved->id)->lockForUpdate()->firstOrFail();
+            abort_unless(hash_equals($s->code, $v['code']), 404, 'Kode tidak ditemukan.');
             $s->assertAvailable();
             $token = bin2hex(random_bytes(32));
             $p = Participant::create(['exam_session_id' => $s->id, 'full_name' => $v['full_name'], 'participant_number' => $v['participant_number'], 'token_hash' => hash('sha256', $token), 'status' => 'checking', 'last_seen_at' => now()]);
@@ -175,15 +195,17 @@ class ExamController extends Controller
         $p = $this->participant($r);
         $key = 'pin:'.$p->exam_session_id.':'.$v['action'];
         abort_if(RateLimiter::tooManyAttempts($key, 5), 429, 'Terlalu banyak percobaan kode. Tunggu 60 detik.');
-        $hash = $v['action'] === 'exit' ? $p->examSession->exit_code_hash : $p->examSession->resume_code_hash;
-        if (! $hash || ! Hash::check($v['pin'], $hash)) {
-            RateLimiter::hit($key, 60);
-            throw ValidationException::withMessages(['pin' => $v['action'] === 'exit' ? 'Kode keluar ujian salah.' : 'Kode lanjut ujian salah.']);
-        }
-        RateLimiter::clear($key);
-
-        return DB::transaction(function () use ($r, $v) {
+        $result = DB::transaction(function () use ($r, $v, $key) {
             $p = $this->participant($r);
+            $s = ExamSession::whereKey($p->exam_session_id)->lockForUpdate()->firstOrFail();
+            $p->setRelation('examSession', $s);
+            $hash = $v['action'] === 'exit' ? $s->exit_code_hash : $s->resume_code_hash;
+            if (! $hash || ! Hash::check($v['pin'], $hash)) {
+                RateLimiter::hit($key, 60);
+                return ValidationException::withMessages(['pin' => $v['action'] === 'exit' ? 'Kode keluar ujian salah.' : 'Kode lanjut ujian salah.']);
+            }
+            RateLimiter::clear($key);
+
             if ($v['action'] === 'exit') {
                 $p->update(['status' => 'exited', 'ended_at' => $p->ended_at ?? now(), 'last_seen_at' => now()]);
             } else {
@@ -194,5 +216,11 @@ class ExamController extends Controller
 
             return ['authorized' => true, 'participant' => $p, 'timing' => $this->timing($p)];
         });
+        // Commit failed-attempt counters even when using the database cache store.
+        if ($result instanceof ValidationException) {
+            throw $result;
+        }
+
+        return $result;
     }
 }
