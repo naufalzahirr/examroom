@@ -4,7 +4,7 @@
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="robots" content="{{ $page === 'confirm-deletion' ? 'noindex, nofollow' : 'index, follow' }}">
     <title>{{ ['privacy' => 'Kebijakan Privasi', 'deletion' => 'Hapus Akun dan Data', 'support' => 'Bantuan', 'confirm-deletion' => 'Konfirmasi Hapus Akun'][$page] }} — ExamRoom</title>
-    <link rel="icon" href="/assets/mark.png"><link rel="stylesheet" href="/assets/examroom.css?v=20261028-v6">
+    <link rel="icon" href="/assets/mark.png"><link rel="stylesheet" href="/assets/vendor/sneat/core.css?v=3.0.0"><link rel="stylesheet" href="/assets/examroom.css?v=20261028-sneat-1">
 </head>
 <body>
 <div class="legal-shell">
@@ -61,5 +61,5 @@
     </main>
     <footer class="legal-footer">ExamRoom · <a href="mailto:{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}">{{ (config('examroom.support_email') ?: 'support@examroom.smkn4tpi.sch.id') }}</a></footer>
 </div>
-<script src="/assets/examroom-public.js?v=20261028-v6" defer></script>
+<script src="/assets/examroom-public.js?v=20261028-sneat-1" defer></script>
 </body></html>
